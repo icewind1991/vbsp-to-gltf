@@ -18,4 +18,4 @@ The output for the converter isn't particularly optimized, it's strongly recomme
 
 ![screenshot of koth_bagel model](readme/bagel.png)
 
-`koth_bagel` as vieweed with the [PlayCanvas model viewer](https://playcanvas.com/viewer).
+`koth_bagel` as viewed with the [PlayCanvas model viewer](https://playcanvas.com/viewer).
