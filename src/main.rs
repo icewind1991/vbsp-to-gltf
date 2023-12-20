@@ -56,7 +56,7 @@ fn main() -> miette::Result<()> {
     let map = Bsp::read(&data).map_err(Error::from)?;
     loader.add_source(map.pack.clone());
 
-    let glb = export(map, &mut loader)?;
+    let glb = export(map, &loader)?;
 
     let writer = File::create(&args.target)
         .map_err(Error::from)
@@ -80,7 +80,7 @@ fn export(bsp: Bsp, loader: &Loader) -> Result<Glb<'static>, Error> {
     }
 
     for prop in bsp.static_props() {
-        let mesh = push_or_get_model(&mut buffer, &mut root, loader, &prop.model(), prop.skin);
+        let mesh = push_or_get_model(&mut buffer, &mut root, loader, prop.model(), prop.skin);
         let rotation = prop.rotation();
 
         let node = Node {

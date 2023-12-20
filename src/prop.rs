@@ -22,7 +22,7 @@ impl From<&vmdl::vvd::Vertex> for ModelVertex {
     fn from(vertex: &vmdl::vvd::Vertex) -> Self {
         ModelVertex {
             position: map_coords(vertex.position),
-            uv: vertex.texture_coordinates.into(),
+            uv: vertex.texture_coordinates,
             normal: vertex.normal.into(),
         }
     }
@@ -125,7 +125,7 @@ pub fn push_or_get_model(
     skin: i32,
 ) -> Index<Mesh> {
     let skinned_name = format!("{model}_{skin}");
-    match get_mesh_index(&mut gltf.meshes, &skinned_name) {
+    match get_mesh_index(&gltf.meshes, &skinned_name) {
         Some(index) => index,
         None => {
             let prop = load_prop(loader, model).expect("failed to load prop");

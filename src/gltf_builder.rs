@@ -23,7 +23,7 @@ impl From<&vmdl::vvd::Vertex> for Vertex {
     fn from(vertex: &vmdl::vvd::Vertex) -> Self {
         Vertex {
             position: vertex.position.into(),
-            uv: vertex.texture_coordinates.into(),
+            uv: vertex.texture_coordinates,
             normal: vertex.normal.into(),
         }
     }
@@ -36,7 +36,7 @@ pub fn push_or_get_material(
     material: &str,
 ) -> Index<Material> {
     let material = material.to_ascii_lowercase();
-    match get_material_index(&mut gltf.materials, &material) {
+    match get_material_index(&gltf.materials, &material) {
         Some(index) => index,
         None => {
             let material = load_material_fallback(&material, &[String::new()], loader);
@@ -96,7 +96,7 @@ fn push_or_get_texture(
     gltf: &mut Root,
     texture: TextureData,
 ) -> Index<Texture> {
-    match get_texture_index(&mut gltf.textures, &texture.name) {
+    match get_texture_index(&gltf.textures, &texture.name) {
         Some(index) => index,
         None => {
             let index = gltf.textures.len() as u32;

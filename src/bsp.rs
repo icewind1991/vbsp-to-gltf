@@ -42,7 +42,7 @@ pub fn bsp_models(bsp: &Bsp) -> Result<Vec<(Handle<Model>, Vector)>, Error> {
     Ok(models)
 }
 
-fn bounding_box<'a>(vertices: impl IntoIterator<Item = Vector>) -> ([f32; 3], [f32; 3]) {
+fn bounding_box(vertices: impl IntoIterator<Item = Vector>) -> ([f32; 3], [f32; 3]) {
     let mut min = Vector::from([f32::MAX, f32::MAX, f32::MAX]);
     let mut max = Vector::from([f32::MIN, f32::MIN, f32::MIN]);
 
