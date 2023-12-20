@@ -1982,7 +1982,7 @@ checksum = "49874b5167b65d7193b8aba1567f5c7d93d001cafc34600cee003eda787e483f"
 [[package]]
 name = "vmdl"
 version = "0.1.0"
-source = "git+https://github.com/icewind1991/vmdl#585a4850319e67555c10f9fad8f158e9e3d18c15"
+source = "git+https://github.com/icewind1991/vmdl#5cd7c3d859996102c47f77a8f292570c55d8438c"
 dependencies = [
  "arrayvec",
  "bitflags 1.3.2",

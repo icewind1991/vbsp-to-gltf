@@ -73,6 +73,7 @@
           cargo-msrv
           cargo-semver-checks
           cargo-insta
+          meshoptimizer
           (writeShellApplication {
             name = "cargo-fuzz";
             runtimeInputs = [cargo-fuzz toolchain];

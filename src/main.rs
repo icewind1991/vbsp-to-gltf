@@ -3,13 +3,15 @@ mod bsp;
 mod error;
 pub mod gltf_builder;
 mod materials;
-// mod prop;
+mod prop;
 
 use crate::bsp::{bsp_models, push_bsp_model};
+use crate::prop::push_or_get_model;
 use clap::Parser;
 pub use error::Error;
 use gltf::Glb;
-use gltf_json::{Buffer, Index, Root, Scene};
+use gltf_json::scene::UnitQuaternion;
+use gltf_json::{Buffer, Index, Node, Root, Scene};
 use miette::Context;
 use std::borrow::Cow;
 use std::fs::{read, File};
@@ -67,13 +69,39 @@ fn main() -> miette::Result<()> {
     Ok(())
 }
 
-fn export(bsp: Bsp, loader: &mut Loader) -> Result<Glb<'static>, Error> {
+fn export(bsp: Bsp, loader: &Loader) -> Result<Glb<'static>, Error> {
     let mut buffer = Vec::new();
 
     let mut root = Root::default();
 
     for (model, offset) in bsp_models(&bsp)? {
         let node = push_bsp_model(&mut buffer, &mut root, loader, &model, offset);
+        root.nodes.push(node);
+    }
+
+    for prop in bsp.static_props() {
+        let mesh = push_or_get_model(&mut buffer, &mut root, loader, &prop.model(), prop.skin);
+        let rotation = prop.rotation();
+
+        let node = Node {
+            camera: None,
+            children: None,
+            extensions: Default::default(),
+            extras: Default::default(),
+            matrix: None,
+            mesh: Some(mesh),
+            name: None,
+            rotation: Some(UnitQuaternion([
+                rotation.v.x,
+                rotation.v.y,
+                rotation.v.z,
+                rotation.s,
+            ])),
+            scale: None,
+            translation: Some(map_coords(prop.origin)),
+            skin: None,
+            weights: None,
+        };
         root.nodes.push(node);
     }
 
