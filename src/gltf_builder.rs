@@ -73,7 +73,7 @@ pub fn push_material(buffer: &mut Vec<u8>, gltf: &mut Root, material: MaterialDa
             .alpha_test
             .map(AlphaCutoff)
             .filter(|_| alpha_mode == AlphaMode::Mask),
-        double_sided: true,
+        double_sided: material.no_cull,
         alpha_mode: Valid(alpha_mode),
         pbr_metallic_roughness: PbrMetallicRoughness {
             base_color_factor: PbrBaseColorFactor(

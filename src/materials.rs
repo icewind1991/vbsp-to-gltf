@@ -29,6 +29,7 @@ pub struct MaterialData {
     pub alpha_test: Option<f32>,
     pub bump_map: Option<TextureData>,
     pub translucent: bool,
+    pub no_cull: bool,
 }
 
 #[derive(Debug)]
@@ -80,10 +81,8 @@ pub fn load_material(
             color: [82, 180, 217, 128],
             name: name.into(),
             path,
-            texture: None,
-            bump_map: None,
-            alpha_test: None,
             translucent: true,
+            ..MaterialData::default()
         });
     }
 
@@ -112,6 +111,7 @@ pub fn load_material(
         bump_map,
         alpha_test,
         translucent: translucent | glass,
+        no_cull: material.no_cull(),
     })
 }
 
