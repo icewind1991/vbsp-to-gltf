@@ -130,7 +130,7 @@ pub fn push_or_get_model(
         None => {
             let prop = load_prop(loader, model).expect("failed to load prop");
             let index = gltf.meshes.len() as u32;
-            let material = push_model(buffer, gltf, loader, &prop, skin);
+            let material = push_model(buffer, gltf, loader, &prop, skin, skinned_name);
             gltf.meshes.push(material);
             Index::new(index)
         }
@@ -151,6 +151,7 @@ pub fn push_model(
     loader: &Loader,
     model: &Model,
     skin: i32,
+    skinned_name: String,
 ) -> Mesh {
     let accessor_start = gltf.accessors.len() as u32;
     push_vertices(buffer, gltf, model);
@@ -167,7 +168,7 @@ pub fn push_model(
     Mesh {
         extensions: Default::default(),
         extras: Default::default(),
-        name: Some(format!("{}_{skin}", model.name())),
+        name: Some(skinned_name),
         primitives,
         weights: None,
     }
