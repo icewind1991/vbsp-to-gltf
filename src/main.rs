@@ -7,10 +7,10 @@ mod prop;
 
 use crate::bsp::{bsp_models, push_bsp_model};
 use crate::prop::push_or_get_model;
+use cgmath::Matrix4;
 use clap::Parser;
 pub use error::Error;
 use gltf::Glb;
-use gltf_json::scene::UnitQuaternion;
 use gltf_json::{Buffer, Index, Node, Root, Scene};
 use miette::Context;
 use std::borrow::Cow;
@@ -81,24 +81,25 @@ fn export(bsp: Bsp, loader: &Loader) -> Result<Glb<'static>, Error> {
 
     for prop in bsp.static_props() {
         let mesh = push_or_get_model(&mut buffer, &mut root, loader, prop.model(), prop.skin);
-        let rotation = prop.rotation();
+
+        let matrix = Matrix4::from_translation(map_coords(prop.origin).into())
+            * Matrix4::from(prop.rotation());
 
         let node = Node {
             camera: None,
             children: None,
             extensions: Default::default(),
             extras: Default::default(),
-            matrix: None,
+            matrix: Some([
+                matrix.x.x, matrix.x.y, matrix.x.z, matrix.x.w, matrix.y.x, matrix.y.y, matrix.y.z,
+                matrix.y.w, matrix.z.x, matrix.z.y, matrix.z.z, matrix.z.w, matrix.w.x, matrix.w.y,
+                matrix.w.z, matrix.w.w,
+            ]),
             mesh: Some(mesh),
             name: None,
-            rotation: Some(UnitQuaternion([
-                rotation.v.x,
-                rotation.v.y,
-                rotation.v.z,
-                rotation.s,
-            ])),
+            rotation: None,
             scale: None,
-            translation: Some(map_coords(prop.origin)),
+            translation: None,
             skin: None,
             weights: None,
         };

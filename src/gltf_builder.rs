@@ -1,6 +1,5 @@
 use crate::materials::{load_material_fallback, MaterialData, TextureData};
 use crate::pad_byte_vector;
-use bytemuck::{Pod, Zeroable};
 use gltf_json::buffer::View;
 use gltf_json::image::MimeType;
 use gltf_json::material::{AlphaCutoff, AlphaMode, PbrBaseColorFactor, PbrMetallicRoughness};
@@ -10,24 +9,6 @@ use gltf_json::{Extras, Image, Index, Material, Root, Texture};
 use image::png::PngEncoder;
 use image::{ColorType, DynamicImage, GenericImageView};
 use tf_asset_loader::Loader;
-
-#[derive(Copy, Clone, Debug, Default, Zeroable, Pod)]
-#[repr(C)]
-pub struct Vertex {
-    position: [f32; 3],
-    normal: [f32; 3],
-    uv: [f32; 2],
-}
-
-impl From<&vmdl::vvd::Vertex> for Vertex {
-    fn from(vertex: &vmdl::vvd::Vertex) -> Self {
-        Vertex {
-            position: vertex.position.into(),
-            uv: vertex.texture_coordinates,
-            normal: vertex.normal.into(),
-        }
-    }
-}
 
 pub fn push_or_get_material(
     buffer: &mut Vec<u8>,
