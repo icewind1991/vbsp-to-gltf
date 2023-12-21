@@ -86,7 +86,9 @@ pub fn load_material(
         });
     }
 
-    let base_texture = material.base_texture();
+    let base_texture = material
+        .base_texture()
+        .ok_or_else(|| Error::Other("no basetexture".into()))?;
 
     let translucent = material.translucent();
     let glass = material.surface_prop() == Some("glass");

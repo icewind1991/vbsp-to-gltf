@@ -54,7 +54,7 @@ fn main() -> miette::Result<()> {
     let mut loader = Loader::new().map_err(Error::from)?;
     let data = read(args.source).map_err(Error::from)?;
     let map = Bsp::read(&data).map_err(Error::from)?;
-    loader.add_source(map.pack.clone());
+    loader.add_source(map.pack.clone().into_zip());
 
     let glb = export(map, &loader)?;
 
