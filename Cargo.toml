@@ -12,12 +12,12 @@ tracing = "0.1.37"
 tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }
 tracing-tree = "0.3.0"
 vtf = "0.1.6"
-vmt-parser = "0.1"
+vmt-parser = "0.1.1"
 image = "0.23.14"
 tf-asset-loader = { version = "0.1", features = ["zip"] }
 vmdl = "0.1"
 clap = { version = "4.0.29", features = ["derive"] }
-gltf-json = "1.4.0"
+gltf-json = { version = "1.4.0", features = ["KHR_texture_transform"] }
 gltf = "1.4.0"
 cgmath = "0.18.0"
 bytemuck = { version = "1.14.0", features = ["derive"] }

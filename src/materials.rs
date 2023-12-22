@@ -2,8 +2,8 @@ use crate::Error;
 use image::DynamicImage;
 use tf_asset_loader::Loader;
 use tracing::{error, instrument};
-use vmt_parser::from_str;
 use vmt_parser::material::{Material, WaterMaterial};
+use vmt_parser::{from_str, TextureTransform};
 use vtf::vtf::VTF;
 
 pub fn load_material_fallback(name: &str, search_dirs: &[String], loader: &Loader) -> MaterialData {
@@ -30,6 +30,7 @@ pub struct MaterialData {
     pub bump_map: Option<TextureData>,
     pub translucent: bool,
     pub no_cull: bool,
+    pub transform: Option<TextureTransform>,
 }
 
 #[derive(Debug)]
@@ -102,6 +103,11 @@ pub fn load_material(
         })
     });
 
+    let transform = material
+        .base_texture_transform()
+        .filter(|transform| **transform != TextureTransform::default())
+        .cloned();
+
     Ok(MaterialData {
         color: [255; 4],
         name: name.into(),
@@ -114,6 +120,7 @@ pub fn load_material(
         alpha_test,
         translucent: translucent | glass,
         no_cull: material.no_cull(),
+        transform,
     })
 }
 

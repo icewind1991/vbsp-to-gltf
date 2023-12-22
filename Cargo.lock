@@ -1821,9 +1821,9 @@ dependencies = [
 
 [[package]]
 name = "vmt-parser"
-version = "0.1.0"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a1c071256bc38ca5a1f322052106da23ea3cd8bd0a5f18e9a3bd81ad040092bf"
+checksum = "620c541038e4ea9ffcd32439f784ee60742c43da798d01ab62e4c005e7a22923"
 dependencies = [
  "miette",
  "serde",

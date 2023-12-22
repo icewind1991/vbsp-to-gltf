@@ -1,6 +1,9 @@
 use crate::materials::{load_material_fallback, MaterialData, TextureData};
 use crate::pad_byte_vector;
 use gltf_json::buffer::View;
+use gltf_json::extensions::texture::{
+    TextureTransform, TextureTransformOffset, TextureTransformRotation, TextureTransformScale,
+};
 use gltf_json::image::MimeType;
 use gltf_json::material::{AlphaCutoff, AlphaMode, PbrBaseColorFactor, PbrMetallicRoughness};
 use gltf_json::texture::Info;
@@ -9,6 +12,7 @@ use gltf_json::validation::USize64;
 use gltf_json::{Extras, Image, Index, Material, Root, Texture};
 use image::png::PngEncoder;
 use image::{ColorType, DynamicImage, GenericImageView};
+use std::f32::consts::PI;
 use tf_asset_loader::Loader;
 
 pub fn push_or_get_material(
@@ -49,6 +53,16 @@ pub fn push_material(buffer: &mut Vec<u8>, gltf: &mut Root, material: MaterialDa
         _ => AlphaMode::Opaque,
     };
 
+    let transform = material.transform.map(|transform| TextureTransform {
+        offset: TextureTransformOffset(transform.translate),
+        rotation: TextureTransformRotation(transform.rotate / 180.0 * PI),
+        scale: TextureTransformScale(transform.scale),
+        ..TextureTransform::default()
+    });
+    let extensions = transform.map(|transform| gltf_json::extensions::texture::Info {
+        texture_transform: Some(transform),
+    });
+
     Material {
         name: Some(material.name),
         alpha_cutoff: material
@@ -64,7 +78,7 @@ pub fn push_material(buffer: &mut Vec<u8>, gltf: &mut Root, material: MaterialDa
             base_color_texture: texture_index.map(|index| Info {
                 index,
                 tex_coord: 0,
-                extensions: None,
+                extensions,
                 extras: Extras::default(),
             }),
             ..PbrMetallicRoughness::default()
