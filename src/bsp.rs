@@ -63,7 +63,6 @@ fn bounding_box(vertices: impl IntoIterator<Item = Vector>) -> ([f32; 3], [f32; 
 #[repr(C)]
 pub struct BspVertexData {
     position: [f32; 3],
-    normal: [f32; 3],
     uv: [f32; 2],
 }
 
@@ -122,7 +121,6 @@ pub fn push_bsp_face(
     let texture = face.texture();
     let vertices = face.vertex_positions().map(move |pos| BspVertexData {
         position: map_coords(pos),
-        normal: map_coords(face.normal()),
         uv: texture.uv(pos),
     });
 
@@ -157,20 +155,6 @@ pub fn push_bsp_face(
         normalized: false,
         sparse: None,
     };
-    let normals = Accessor {
-        buffer_view: Some(vertex_view),
-        byte_offset: Some(USize64(offset_of!(BspVertexData, normal) as u64)),
-        count: USize64(vertex_count),
-        component_type: Valid(GenericComponentType(ComponentType::F32)),
-        extensions: Default::default(),
-        extras: Default::default(),
-        type_: Valid(Type::Vec3),
-        min: None,
-        max: None,
-        name: None,
-        normalized: false,
-        sparse: None,
-    };
     let uvs = Accessor {
         buffer_view: Some(vertex_view),
         byte_offset: Some(USize64(offset_of!(BspVertexData, uv) as u64)),
@@ -188,7 +172,6 @@ pub fn push_bsp_face(
 
     let accessor_start = gltf.accessors.len() as u32;
     gltf.accessors.push(positions);
-    gltf.accessors.push(normals);
     gltf.accessors.push(uvs);
 
     let material_index = push_or_get_material(buffer, gltf, loader, face.texture().name());
@@ -197,10 +180,9 @@ pub fn push_bsp_face(
         attributes: {
             let mut map = std::collections::BTreeMap::new();
             map.insert(Valid(Semantic::Positions), Index::new(accessor_start));
-            map.insert(Valid(Semantic::Normals), Index::new(accessor_start + 1));
             map.insert(
                 Valid(Semantic::TexCoords(0)),
-                Index::new(accessor_start + 2),
+                Index::new(accessor_start + 1),
             );
             map
         },
