@@ -7,6 +7,7 @@ mod prop;
 
 use crate::bsp::{bsp_models, push_bsp_model};
 use crate::prop::push_or_get_model;
+use cgmath::{Deg, Quaternion, Rotation3};
 use clap::Parser;
 pub use error::Error;
 use gltf::Glb;
@@ -107,11 +108,34 @@ fn export(bsp: Bsp, loader: &Loader) -> Result<Glb<'static>, Error> {
     }
 
     let node_indices = 0..root.nodes.len();
+    let root_rotation = Quaternion::<f32>::from_angle_y(Deg(90.0));
+    let root_node = Node {
+        camera: None,
+        children: Some(node_indices.map(|index| Index::new(index as u32)).collect()),
+        extensions: Default::default(),
+        extras: Default::default(),
+        matrix: None,
+        mesh: None,
+        name: None,
+        rotation: Some(UnitQuaternion([
+            root_rotation.v.x,
+            root_rotation.v.y,
+            root_rotation.v.z,
+            root_rotation.s,
+        ])),
+        scale: None,
+        translation: None,
+        skin: None,
+        weights: None,
+    };
+    let root_index = root.nodes.len();
+    root.nodes.push(root_node);
+
     root.scenes = vec![Scene {
         name: None,
         extensions: None,
         extras: Default::default(),
-        nodes: node_indices.map(|index| Index::new(index as u32)).collect(),
+        nodes: vec![Index::new(root_index as u32)],
     }];
 
     root.buffers.push(Buffer {
@@ -149,13 +173,10 @@ fn pad_byte_vector(vec: &mut Vec<u8>) {
 }
 
 // 1 hammer unit is ~1.905cm
+#[allow(dead_code)]
 pub const UNIT_SCALE: f32 = 1.0 / (1.905 * 100.0);
 
 pub fn map_coords<C: Into<[f32; 3]>>(vec: C) -> [f32; 3] {
     let vec = vec.into();
-    [
-        vec[1] * UNIT_SCALE,
-        vec[2] * UNIT_SCALE,
-        vec[0] * UNIT_SCALE,
-    ]
+    [vec[1], vec[2], vec[0]]
 }
