@@ -98,7 +98,7 @@ pub fn push_bsp_model(
         extras: Default::default(),
         matrix: None,
         mesh: Some(Index::new(mesh_index)),
-        name: None,
+        name: Some("bsp".into()),
         rotation: None,
         scale: None,
         translation: Some(map_coords(offset)),

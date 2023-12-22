@@ -97,7 +97,7 @@ fn export(bsp: Bsp, loader: &Loader) -> Result<Glb<'static>, Error> {
                 matrix.w.z, matrix.w.w,
             ]),
             mesh: Some(mesh),
-            name: None,
+            name: Some(prop.model().into()),
             rotation: None,
             scale: None,
             translation: None,
