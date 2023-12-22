@@ -2,9 +2,10 @@ use crate::gltf_builder::push_or_get_material;
 use crate::{map_coords, Error};
 use bytemuck::{offset_of, Pod, Zeroable};
 use gltf_json::accessor::{ComponentType, GenericComponentType, Type};
-use gltf_json::buffer::{Target, View};
+use gltf_json::buffer::{Stride, Target, View};
 use gltf_json::mesh::{Mode, Primitive, Semantic};
 use gltf_json::validation::Checked::Valid;
+use gltf_json::validation::USize64;
 use gltf_json::{Accessor, Index, Mesh, Root, Value};
 use std::mem::size_of;
 use tf_asset_loader::Loader;
@@ -29,9 +30,9 @@ impl From<&vmdl::vvd::Vertex> for ModelVertex {
 }
 
 fn push_vertices(buffer: &mut Vec<u8>, gltf: &mut Root, model: &Model) {
-    let start = buffer.len() as u32;
+    let start = buffer.len() as u64;
     let view_start = gltf.buffer_views.len() as u32;
-    let vertex_count = model.vertices().len() as u32;
+    let vertex_count = model.vertices().len() as u64;
 
     let (min, max) = model.bounding_box();
     let min = map_coords(min);
@@ -46,9 +47,9 @@ fn push_vertices(buffer: &mut Vec<u8>, gltf: &mut Root, model: &Model) {
 
     let vertex_buffer_view = View {
         buffer: Index::new(0),
-        byte_length: buffer.len() as u32 - start,
-        byte_offset: Some(start),
-        byte_stride: Some(size_of::<ModelVertex>() as u32),
+        byte_length: USize64(buffer.len() as u64 - start),
+        byte_offset: Some(USize64(start)),
+        byte_stride: Some(Stride(size_of::<ModelVertex>())),
         extensions: Default::default(),
         extras: Default::default(),
         name: None,
@@ -59,8 +60,8 @@ fn push_vertices(buffer: &mut Vec<u8>, gltf: &mut Root, model: &Model) {
 
     let positions = Accessor {
         buffer_view: Some(Index::new(view_start)),
-        byte_offset: Some(offset_of!(ModelVertex, position) as u32),
-        count: vertex_count,
+        byte_offset: Some(USize64(offset_of!(ModelVertex, position) as u64)),
+        count: USize64(vertex_count),
         component_type: Valid(GenericComponentType(ComponentType::F32)),
         extensions: Default::default(),
         extras: Default::default(),
@@ -73,8 +74,8 @@ fn push_vertices(buffer: &mut Vec<u8>, gltf: &mut Root, model: &Model) {
     };
     let uvs = Accessor {
         buffer_view: Some(Index::new(view_start)),
-        byte_offset: Some(offset_of!(ModelVertex, uv) as u32),
-        count: vertex_count,
+        byte_offset: Some(USize64(offset_of!(ModelVertex, uv) as u64)),
+        count: USize64(vertex_count),
         component_type: Valid(GenericComponentType(ComponentType::F32)),
         extensions: Default::default(),
         extras: Default::default(),
@@ -87,8 +88,8 @@ fn push_vertices(buffer: &mut Vec<u8>, gltf: &mut Root, model: &Model) {
     };
     let normals = Accessor {
         buffer_view: Some(Index::new(view_start)),
-        byte_offset: Some(offset_of!(ModelVertex, normal) as u32),
-        count: vertex_count,
+        byte_offset: Some(USize64(offset_of!(ModelVertex, normal) as u64)),
+        count: USize64(vertex_count),
         component_type: Valid(GenericComponentType(ComponentType::F32)),
         extensions: Default::default(),
         extras: Default::default(),
@@ -182,7 +183,7 @@ pub fn push_primitive(
     vertex_accessor_start: u32,
     skin: &SkinTable,
 ) -> Primitive {
-    let buffer_start = buffer.len() as u32;
+    let buffer_start = buffer.len() as u64;
     let view_start = gltf.buffer_views.len() as u32;
     let accessor_start = gltf.accessors.len() as u32;
 
@@ -192,12 +193,12 @@ pub fn push_primitive(
             .flat_map(|index| (index as u32).to_le_bytes()),
     );
 
-    let byte_length = buffer.len() as u32 - buffer_start;
+    let byte_length = buffer.len() as u64 - buffer_start;
 
     let view = View {
         buffer: Index::new(0),
-        byte_length,
-        byte_offset: Some(buffer_start),
+        byte_length: USize64(byte_length),
+        byte_offset: Some(USize64(buffer_start)),
         byte_stride: None,
         extensions: Default::default(),
         extras: Default::default(),
@@ -208,8 +209,8 @@ pub fn push_primitive(
 
     let accessor = Accessor {
         buffer_view: Some(Index::new(view_start)),
-        byte_offset: Some(0),
-        count: byte_length / size_of::<u32>() as u32,
+        byte_offset: Some(USize64(0)),
+        count: USize64(byte_length / size_of::<u32>() as u64),
         component_type: Valid(GenericComponentType(ComponentType::U32)),
         extensions: Default::default(),
         extras: Default::default(),

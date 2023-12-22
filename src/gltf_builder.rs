@@ -5,6 +5,7 @@ use gltf_json::image::MimeType;
 use gltf_json::material::{AlphaCutoff, AlphaMode, PbrBaseColorFactor, PbrMetallicRoughness};
 use gltf_json::texture::Info;
 use gltf_json::validation::Checked::Valid;
+use gltf_json::validation::USize64;
 use gltf_json::{Extras, Image, Index, Material, Root, Texture};
 use image::png::PngEncoder;
 use image::{ColorType, DynamicImage, GenericImageView};
@@ -105,7 +106,7 @@ fn push_texture(buffer: &mut Vec<u8>, gltf: &mut Root, texture: TextureData) -> 
             image = DynamicImage::ImageRgb8(image.into_rgb8());
         }
     }
-    let buffer_start = buffer.len() as u32;
+    let buffer_start = buffer.len() as u64;
     let view_start = gltf.buffer_views.len() as u32;
     let image_start = gltf.images.len() as u32;
 
@@ -122,13 +123,13 @@ fn push_texture(buffer: &mut Vec<u8>, gltf: &mut Root, texture: TextureData) -> 
 
     buffer.extend_from_slice(&png_buffer);
 
-    let byte_length = buffer.len() as u32 - buffer_start;
+    let byte_length = buffer.len() as u64 - buffer_start;
     pad_byte_vector(buffer);
 
     let view = View {
         buffer: Index::new(0),
-        byte_length,
-        byte_offset: Some(buffer_start),
+        byte_length: USize64(byte_length),
+        byte_offset: Some(USize64(buffer_start)),
         byte_stride: None,
         extensions: Default::default(),
         extras: Default::default(),

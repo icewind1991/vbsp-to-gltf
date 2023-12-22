@@ -2,9 +2,10 @@ use crate::gltf_builder::push_or_get_material;
 use crate::{map_coords, Error};
 use bytemuck::{offset_of, Pod, Zeroable};
 use gltf_json::accessor::{ComponentType, GenericComponentType, Type};
-use gltf_json::buffer::{Target, View};
+use gltf_json::buffer::{Stride, Target, View};
 use gltf_json::mesh::{Mode, Primitive, Semantic};
 use gltf_json::validation::Checked::Valid;
+use gltf_json::validation::USize64;
 use gltf_json::{Accessor, Index, Mesh, Node, Root, Value};
 use std::mem::size_of;
 use tf_asset_loader::Loader;
@@ -112,9 +113,9 @@ pub fn push_bsp_face(
     loader: &Loader,
     face: &Handle<Face>,
 ) -> Primitive {
-    let vertex_count = face.vertex_positions().count() as u32;
+    let vertex_count = face.vertex_positions().count() as u64;
 
-    let buffer_start = buffer.len() as u32;
+    let buffer_start = buffer.len() as u64;
 
     let (min, max) = bounding_box(face.vertex_positions());
 
@@ -130,9 +131,9 @@ pub fn push_bsp_face(
 
     let vertex_buffer_view = View {
         buffer: Index::new(0),
-        byte_length: buffer.len() as u32 - buffer_start,
-        byte_offset: Some(buffer_start),
-        byte_stride: Some(size_of::<BspVertexData>() as u32),
+        byte_length: USize64(buffer.len() as u64 - buffer_start),
+        byte_offset: Some(USize64(buffer_start)),
+        byte_stride: Some(Stride(size_of::<BspVertexData>())),
         extensions: Default::default(),
         extras: Default::default(),
         name: None,
@@ -144,8 +145,8 @@ pub fn push_bsp_face(
 
     let positions = Accessor {
         buffer_view: Some(vertex_view),
-        byte_offset: Some(offset_of!(BspVertexData, position) as u32),
-        count: vertex_count,
+        byte_offset: Some(USize64(offset_of!(BspVertexData, position) as u64)),
+        count: USize64(vertex_count),
         component_type: Valid(GenericComponentType(ComponentType::F32)),
         extensions: Default::default(),
         extras: Default::default(),
@@ -158,8 +159,8 @@ pub fn push_bsp_face(
     };
     let normals = Accessor {
         buffer_view: Some(vertex_view),
-        byte_offset: Some(offset_of!(BspVertexData, normal) as u32),
-        count: vertex_count,
+        byte_offset: Some(USize64(offset_of!(BspVertexData, normal) as u64)),
+        count: USize64(vertex_count),
         component_type: Valid(GenericComponentType(ComponentType::F32)),
         extensions: Default::default(),
         extras: Default::default(),
@@ -172,8 +173,8 @@ pub fn push_bsp_face(
     };
     let uvs = Accessor {
         buffer_view: Some(vertex_view),
-        byte_offset: Some(offset_of!(BspVertexData, uv) as u32),
-        count: vertex_count,
+        byte_offset: Some(USize64(offset_of!(BspVertexData, uv) as u64)),
+        count: USize64(vertex_count),
         component_type: Valid(GenericComponentType(ComponentType::F32)),
         extensions: Default::default(),
         extras: Default::default(),

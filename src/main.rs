@@ -11,6 +11,7 @@ use cgmath::Matrix4;
 use clap::Parser;
 pub use error::Error;
 use gltf::Glb;
+use gltf_json::validation::USize64;
 use gltf_json::{Buffer, Index, Node, Root, Scene};
 use miette::Context;
 use std::borrow::Cow;
@@ -115,7 +116,7 @@ fn export(bsp: Bsp, loader: &Loader) -> Result<Glb<'static>, Error> {
     }];
 
     root.buffers.push(Buffer {
-        byte_length: buffer.len() as u32,
+        byte_length: USize64(buffer.len() as u64),
         extensions: Default::default(),
         extras: Default::default(),
         name: None,
