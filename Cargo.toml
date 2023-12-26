@@ -4,6 +4,19 @@ version = "0.1.0"
 edition = "2021"
 rust-version = "1.70.0"
 
+[lib]
+name = "vbsp_to_gltf"
+path = "src/lib.rs"
+
+[[bin]]
+name = "vbsp-to-gltf"
+path = "src/cli.rs"
+
+[[bin]]
+name = "vbsp-server"
+path = "src/server/server.rs"
+required-features = ["server"]
+
 [dependencies]
 miette = { version = "5.5.0", features = ["fancy"] }
 vbsp = "0.4.1"
@@ -14,13 +27,26 @@ tracing-tree = "0.3.0"
 vtf = "0.1.6"
 vmt-parser = "0.1.1"
 image = "0.23.14"
-tf-asset-loader = { version = "0.1", features = ["zip"] }
+tf-asset-loader = { version = "0.1.4", features = ["zip"] }
 vmdl = "0.1"
 clap = { version = "4.0.29", features = ["derive"] }
 gltf-json = { version = "1.4.0", features = ["KHR_texture_transform"] }
 gltf = "1.4.0"
 cgmath = "0.18.0"
 bytemuck = { version = "1.14.0", features = ["derive"] }
+
+url = { version = "2.5.0", optional = true, features = ["serde"] }
+serde = { version = "1.0.193", optional = true }
+toml = { version = "0.8.8", optional = true }
+axum = { version = "0.7.2", optional = true, features = ["macros"] }
+tokio = { version = "1.35.1", features = ["full"], optional = true }
+reqwest = { version = "0.11.23", optional = true, default-features = false, features = ["rustls-tls-webpki-roots"] }
+async-tempfile = { version = "0.5.0", optional = true }
+tower-http = { version = "0.5.0", optional = true, features = ["cors"] }
+http = { version = "1.0.0", optional = true }
+
+[features]
+server = ["url", "serde", "toml", "axum", "tokio", "reqwest", "async-tempfile", "tower-http", "http"]
 
 [profile.dev.package."*"]
 opt-level = 2

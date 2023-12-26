@@ -88,6 +88,14 @@
             // {
               mode = "check";
             });
+          server = naersk'.buildPackage (nearskOpt
+            // {
+               pname = "vbsp-server";
+               preConfigure = ''
+                cargo_build_options="--features server $cargo_build_options"
+              '';
+              buildInputs = with pkgs; [meshoptimizer];
+            });
           default = vbsp-to-gltf;
         };
 
@@ -101,25 +109,7 @@
           cargo-outdated
           cargo-audit
           cargo-msrv
-          cargo-semver-checks
-          cargo-insta
           meshoptimizer
-          (writeShellApplication {
-            name = "cargo-fuzz";
-            runtimeInputs = [cargo-fuzz toolchain];
-            text = ''
-              # shellcheck disable=SC2068
-              RUSTC_BOOTSTRAP=1 cargo-fuzz $@
-            '';
-          })
-          (writeShellApplication {
-            name = "cargo-expand";
-            runtimeInputs = [cargo-expand toolchain];
-            text = ''
-              # shellcheck disable=SC2068
-              RUSTC_BOOTSTRAP=1 cargo-expand $@
-            '';
-          })
         ];
       in {
         default = mkShell {

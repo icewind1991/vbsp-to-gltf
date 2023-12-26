@@ -1,13 +1,4 @@
-mod bsp;
-pub mod convert;
-mod error;
-pub mod gltf_builder;
-mod materials;
-mod prop;
-
-use crate::convert::export;
 use clap::Parser;
-pub use error::Error;
 use miette::Context;
 use std::fs::{read, File};
 use std::path::PathBuf;
@@ -17,6 +8,7 @@ use tracing_subscriber::util::SubscriberInitExt;
 use tracing_subscriber::EnvFilter;
 use tracing_tree::HierarchicalLayer;
 use vbsp::Bsp;
+use vbsp_to_gltf::{export, Error};
 
 fn setup() {
     miette::set_panic_hook();

@@ -6,3 +6,5 @@ result
 *.snap.new
 *.bsp
 *.glb
+cache
+config.toml
