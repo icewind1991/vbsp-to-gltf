@@ -10,7 +10,9 @@ pub async fn pack(map: &str, data: &[u8]) -> Result<Vec<u8>> {
 
     input.write_all(data).await?;
 
-    let out = Command::new("gltfpack")
+    let pack_cmd = option_env!("GLTFPACK").unwrap_or("gltfpack");
+
+    let out = Command::new(pack_cmd)
         .arg("-kn")
         .arg("-mm")
         .arg("-tc")

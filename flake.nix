@@ -102,8 +102,8 @@
                pname = "vbsp-server";
                preConfigure = ''
                 cargo_build_options="--features server $cargo_build_options"
-              '';
-              buildInputs = with pkgs; [meshoptimizer];
+               '';
+               GLTFPACK = "${pkgs.meshoptimizer}/bin/gltfpack";
             });
           assets = pkgs.fetchSteam {
             name = "tf2-vpks";
