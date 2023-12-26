@@ -107,11 +107,11 @@
             });
           assets = pkgs.fetchSteam {
             name = "tf2-vpks";
-            appId = "232250";
-            depotId = "232250";
-            manifestId = "4816422920228384230"; # 22 December 2023 – 00:14:30 UTC
-            hash = "sha256-X2U7H6ydQ2z4YHjqvA6UlJp4VrECNhgoVu8OPdTsxKE=";
-            fileList = ["regex:(tf2|hl2)_misc.*vpk" "cp_badlands.bsp"];
+            appId = "440";
+            depotId = "441";
+            manifestId = "5382461088476630278"; # 22 December 2023 – 00:13:59 UTC
+            hash = "sha256-p8waSdyFTKSo7CKQAjAGhL4hGiacjU0M59z47VH1NwM=";
+            fileList = ["regex:(tf2|hl2)_(misc|textures)_.*\.vpk"];
           };
           server-with-assets = server.overrideAttrs (old: {
             buildInputs = server.buildInputs ++ [ pkgs.makeWrapper ];
