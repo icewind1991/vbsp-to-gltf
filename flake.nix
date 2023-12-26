@@ -10,6 +10,11 @@
     cross-naersk.url = "github:icewind1991/cross-naersk";
     cross-naersk.inputs.nixpkgs.follows = "nixpkgs";
     cross-naersk.inputs.naersk.follows = "naersk";
+    steam-fetcher = {
+#      url = "github:nix-community/steam-fetcher";
+      url = "github:icewind1991/steam-fetcher/filelist";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = {
@@ -19,9 +24,13 @@
     naersk,
     rust-overlay,
     cross-naersk,
+    steam-fetcher,
   }:
     utils.lib.eachDefaultSystem (system: let
-      overlays = [(import rust-overlay)];
+      overlays = [
+        steam-fetcher.overlays.default
+        (import rust-overlay)
+      ];
       pkgs = (import nixpkgs) {
         inherit system overlays;
       };
@@ -96,6 +105,20 @@
               '';
               buildInputs = with pkgs; [meshoptimizer];
             });
+          assets = pkgs.fetchSteam {
+            name = "tf2-vpks";
+            appId = "232250";
+            depotId = "232250";
+            manifestId = "4816422920228384230"; # 22 December 2023 – 00:14:30 UTC
+            hash = "sha256-X2U7H6ydQ2z4YHjqvA6UlJp4VrECNhgoVu8OPdTsxKE=";
+            fileList = ["regex:(tf2|hl2)_misc.*vpk" "cp_badlands.bsp"];
+          };
+          server-with-assets = server.overrideAttrs (old: {
+            buildInputs = server.buildInputs ++ [ pkgs.makeWrapper ];
+            postInstall = ''
+              wrapProgram "$out/bin/vbsp-server" --set TF_DIR "${assets}"
+            '';
+          });
           default = vbsp-to-gltf;
         };
 

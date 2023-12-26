@@ -64,6 +64,7 @@
         "naersk": "naersk",
         "nixpkgs": "nixpkgs",
         "rust-overlay": "rust-overlay",
+        "steam-fetcher": "steam-fetcher",
         "utils": "utils"
       }
     },
@@ -87,6 +88,27 @@
       "original": {
         "owner": "oxalica",
         "repo": "rust-overlay",
+        "type": "github"
+      }
+    },
+    "steam-fetcher": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1703615423,
+        "narHash": "sha256-LIK2g0Qo3+ykC3J8x4b/rvxoTVsJ/WA9HzfIVIHvdRE=",
+        "owner": "icewind1991",
+        "repo": "steam-fetcher",
+        "rev": "0eba31348de19e91ffaf375467b448f6549a7eb3",
+        "type": "github"
+      },
+      "original": {
+        "owner": "icewind1991",
+        "ref": "filelist",
+        "repo": "steam-fetcher",
         "type": "github"
       }
     },
