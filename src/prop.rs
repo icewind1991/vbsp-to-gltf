@@ -1,5 +1,6 @@
+use crate::convert::map_coords;
 use crate::gltf_builder::push_or_get_material;
-use crate::{map_coords, Error};
+use crate::Error;
 use bytemuck::{offset_of, Pod, Zeroable};
 use gltf_json::accessor::{ComponentType, GenericComponentType, Type};
 use gltf_json::buffer::{Stride, Target, View};

@@ -1,5 +1,5 @@
+use crate::convert::pad_byte_vector;
 use crate::materials::{load_material_fallback, MaterialData, TextureData};
-use crate::pad_byte_vector;
 use gltf_json::buffer::View;
 use gltf_json::extensions::texture::{
     TextureTransform, TextureTransformOffset, TextureTransformRotation, TextureTransformScale,
