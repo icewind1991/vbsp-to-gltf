@@ -2,7 +2,7 @@ use gltf_json as json;
 
 use crate::bsp::{bsp_models, push_bsp_model};
 use crate::prop::push_or_get_model;
-use crate::Error;
+use crate::{ConvertOptions, Error};
 use cgmath::{Deg, Quaternion, Rotation3};
 use gltf::Glb;
 use gltf_json::scene::UnitQuaternion;
@@ -12,18 +12,25 @@ use std::borrow::Cow;
 use tf_asset_loader::Loader;
 use vbsp::Bsp;
 
-pub fn export(bsp: Bsp, loader: &Loader) -> Result<Glb<'static>, Error> {
+pub fn export(bsp: Bsp, loader: &Loader, options: ConvertOptions) -> Result<Glb<'static>, Error> {
     let mut buffer = Vec::new();
 
     let mut root = Root::default();
 
     for (model, offset) in bsp_models(&bsp)? {
-        let node = push_bsp_model(&mut buffer, &mut root, loader, &model, offset);
+        let node = push_bsp_model(&mut buffer, &mut root, loader, &model, offset, &options);
         root.nodes.push(node);
     }
 
     for prop in bsp.static_props() {
-        let mesh = push_or_get_model(&mut buffer, &mut root, loader, prop.model(), prop.skin);
+        let mesh = push_or_get_model(
+            &mut buffer,
+            &mut root,
+            loader,
+            prop.model(),
+            prop.skin,
+            &options,
+        );
         let rotation = prop.rotation();
 
         let node = Node {

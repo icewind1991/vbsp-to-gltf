@@ -1,6 +1,6 @@
 use crate::convert::map_coords;
 use crate::gltf_builder::push_or_get_material;
-use crate::Error;
+use crate::{ConvertOptions, Error};
 use bytemuck::{offset_of, Pod, Zeroable};
 use gltf_json::accessor::{ComponentType, GenericComponentType, Type};
 use gltf_json::buffer::{Stride, Target, View};
@@ -125,6 +125,7 @@ pub fn push_or_get_model(
     loader: &Loader,
     model: &str,
     skin: i32,
+    options: &ConvertOptions,
 ) -> Index<Mesh> {
     let skinned_name = format!("{model}_{skin}");
     match get_mesh_index(&gltf.meshes, &skinned_name) {
@@ -132,7 +133,7 @@ pub fn push_or_get_model(
         None => {
             let prop = load_prop(loader, model).expect("failed to load prop");
             let index = gltf.meshes.len() as u32;
-            let material = push_model(buffer, gltf, loader, &prop, skin, skinned_name);
+            let material = push_model(buffer, gltf, loader, &prop, skin, skinned_name, options);
             gltf.meshes.push(material);
             Index::new(index)
         }
@@ -154,6 +155,7 @@ pub fn push_model(
     model: &Model,
     skin: i32,
     skinned_name: String,
+    options: &ConvertOptions,
 ) -> Mesh {
     let accessor_start = gltf.accessors.len() as u32;
     push_vertices(buffer, gltf, model);
@@ -164,7 +166,17 @@ pub fn push_model(
 
     let primitives = model
         .meshes()
-        .map(|mesh| push_primitive(buffer, gltf, loader, &mesh, accessor_start, &skin_table))
+        .map(|mesh| {
+            push_primitive(
+                buffer,
+                gltf,
+                loader,
+                &mesh,
+                accessor_start,
+                &skin_table,
+                options,
+            )
+        })
         .collect();
 
     Mesh {
@@ -183,6 +195,7 @@ pub fn push_primitive(
     mesh: &vmdl::Mesh,
     vertex_accessor_start: u32,
     skin: &SkinTable,
+    options: &ConvertOptions,
 ) -> Primitive {
     let buffer_start = buffer.len() as u64;
     let view_start = gltf.buffer_views.len() as u32;
@@ -224,12 +237,22 @@ pub fn push_primitive(
     };
     gltf.accessors.push(accessor);
 
-    let texture = skin
-        .texture_info(mesh.material_index())
-        .expect("mat out of bounds");
-    let texture_path = find_material(&texture.name, &texture.search_paths, loader)
-        .expect("failed to find texture");
-    let material_index = push_or_get_material(buffer, gltf, loader, &texture_path);
+    let material = if options.textures {
+        let texture = skin
+            .texture_info(mesh.material_index())
+            .expect("mat out of bounds");
+        let texture_path = find_material(&texture.name, &texture.search_paths, loader)
+            .expect("failed to find texture");
+        Some(push_or_get_material(
+            buffer,
+            gltf,
+            loader,
+            &texture_path,
+            options,
+        ))
+    } else {
+        None
+    };
 
     Primitive {
         attributes: {
@@ -251,7 +274,7 @@ pub fn push_primitive(
         extensions: Default::default(),
         extras: Default::default(),
         indices: Some(Index::new(accessor_start)),
-        material: Some(material_index),
+        material,
         mode: Valid(Mode::Triangles),
         targets: None,
     }

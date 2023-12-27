@@ -8,7 +8,7 @@ use tracing_subscriber::util::SubscriberInitExt;
 use tracing_subscriber::EnvFilter;
 use tracing_tree::HierarchicalLayer;
 use vbsp::Bsp;
-use vbsp_to_gltf::{export, Error};
+use vbsp_to_gltf::{export, ConvertOptions, Error};
 
 fn setup() {
     miette::set_panic_hook();
@@ -43,7 +43,7 @@ fn main() -> miette::Result<()> {
     let map = Bsp::read(&data).map_err(Error::from)?;
     loader.add_source(map.pack.clone().into_zip());
 
-    let glb = export(map, &loader)?;
+    let glb = export(map, &loader, ConvertOptions::default())?;
 
     let writer = File::create(&args.target)
         .map_err(Error::from)

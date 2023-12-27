@@ -1,7 +1,7 @@
 mod pack;
 
 use crate::pack::pack;
-use axum::extract::{Path, State};
+use axum::extract::{Path, Query, State};
 use axum::http::StatusCode;
 use axum::response::{Html, IntoResponse, Response};
 use axum::routing::get;
@@ -27,7 +27,7 @@ use tracing_subscriber::EnvFilter;
 use tracing_tree::HierarchicalLayer;
 use url::Url;
 use vbsp::{Bsp, BspError};
-use vbsp_to_gltf::{export, Error};
+use vbsp_to_gltf::{export, ConvertOptions, Error};
 
 type Result<T, E = ServerError> = std::result::Result<T, E>;
 
@@ -163,8 +163,12 @@ struct App {
 }
 
 impl App {
-    fn cached(&self, map: &str) -> Result<Option<Vec<u8>>> {
-        let path = self.cache_dir.join(map);
+    fn cache_path(&self, map: &str, options_key: u64) -> PathBuf {
+        self.cache_dir.join(format!("{options_key:016x}_{map}"))
+    }
+
+    fn cached(&self, map: &str, options_key: u64) -> Result<Option<Vec<u8>>> {
+        let path = self.cache_path(map, options_key);
         if path.exists() {
             Ok(Some(read(path)?))
         } else {
@@ -172,8 +176,8 @@ impl App {
         }
     }
 
-    fn cache(&self, map: &str, data: &[u8]) -> Result<()> {
-        let path = self.cache_dir.join(map);
+    fn cache(&self, map: &str, data: &[u8], options_key: u64) -> Result<()> {
+        let path = self.cache_path(map, options_key);
         Ok(write(path, data)?)
     }
 
@@ -198,11 +202,19 @@ async fn index() -> impl IntoResponse {
     Html(include_str!("./index.html"))
 }
 
-async fn convert(State(app): State<Arc<App>>, Path(map): Path<String>) -> impl IntoResponse {
+async fn convert(
+    State(app): State<Arc<App>>,
+    Path(map): Path<String>,
+    Query(mut options): Query<ConvertOptions>,
+) -> impl IntoResponse {
+    if options.texture_scale > 1.0 {
+        options.texture_scale = 1.0;
+    }
+    let options_key = options.key();
     if !map.is_ascii() || map.contains('/') || !map.ends_with(".glb") {
         return Err(ServerError::InvalidMapName(map));
     }
-    if let Some(cached) = app.cached(&map)? {
+    if let Some(cached) = app.cached(&map, options_key)? {
         info!(map = map, "serving cached model");
         return Ok(cached);
     }
@@ -215,7 +227,7 @@ async fn convert(State(app): State<Arc<App>>, Path(map): Path<String>) -> impl I
     let bsp = Bsp::read(&bsp_data).map_err(Error::from)?;
     loader.add_source(bsp.pack.clone().into_zip());
 
-    let glb = export(bsp, &loader)?;
+    let glb = export(bsp, &loader, options)?;
     let glb = glb.to_vec().map_err(Error::from)?;
     let packed = pack(&map, &glb).await?;
 
@@ -226,7 +238,7 @@ async fn convert(State(app): State<Arc<App>>, Path(map): Path<String>) -> impl I
         "optimized model"
     );
 
-    app.cache(&map, &packed)?;
+    app.cache(&map, &packed, options_key)?;
 
     Ok(packed)
 }

@@ -1,6 +1,7 @@
 use crate::convert::map_coords;
 use crate::error::Error;
 use crate::gltf_builder::push_or_get_material;
+use crate::ConvertOptions;
 use bytemuck::{offset_of, Pod, Zeroable};
 use gltf_json::accessor::{ComponentType, GenericComponentType, Type};
 use gltf_json::buffer::{Stride, Target, View};
@@ -73,11 +74,12 @@ pub fn push_bsp_model(
     loader: &Loader,
     model: &Handle<Model>,
     offset: Vector,
+    options: &ConvertOptions,
 ) -> Node {
     let primitives = model
         .faces()
         .filter(|face| face.is_visible())
-        .map(|face| push_bsp_face(buffer, gltf, loader, &face))
+        .map(|face| push_bsp_face(buffer, gltf, loader, &face, options))
         .collect();
 
     let mesh = Mesh {
@@ -112,6 +114,7 @@ pub fn push_bsp_face(
     gltf: &mut Root,
     loader: &Loader,
     face: &Handle<Face>,
+    options: &ConvertOptions,
 ) -> Primitive {
     let vertex_count = face.vertex_positions().count() as u64;
 
@@ -175,7 +178,17 @@ pub fn push_bsp_face(
     gltf.accessors.push(positions);
     gltf.accessors.push(uvs);
 
-    let material_index = push_or_get_material(buffer, gltf, loader, face.texture().name());
+    let material_index = if options.textures {
+        Some(push_or_get_material(
+            buffer,
+            gltf,
+            loader,
+            face.texture().name(),
+            options,
+        ))
+    } else {
+        None
+    };
 
     Primitive {
         attributes: {
@@ -190,7 +203,7 @@ pub fn push_bsp_face(
         extensions: Default::default(),
         extras: Default::default(),
         indices: None,
-        material: Some(material_index),
+        material: material_index,
         mode: Valid(Mode::Triangles),
         targets: None,
     }

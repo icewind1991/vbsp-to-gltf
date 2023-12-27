@@ -1,13 +1,19 @@
-use crate::Error;
-use image::DynamicImage;
+use crate::{ConvertOptions, Error};
+use image::imageops::FilterType;
+use image::{DynamicImage, GenericImageView};
 use tf_asset_loader::Loader;
 use tracing::{error, instrument};
 use vmt_parser::material::{Material, WaterMaterial};
 use vmt_parser::{from_str, TextureTransform};
 use vtf::vtf::VTF;
 
-pub fn load_material_fallback(name: &str, search_dirs: &[String], loader: &Loader) -> MaterialData {
-    match load_material(name, search_dirs, loader) {
+pub fn load_material_fallback(
+    name: &str,
+    search_dirs: &[String],
+    loader: &Loader,
+    options: &ConvertOptions,
+) -> MaterialData {
+    match load_material(name, search_dirs, loader, options) {
         Ok(mat) => mat,
         Err(e) => {
             error!(error = ?e, "failed to load material");
@@ -44,6 +50,7 @@ pub fn load_material(
     name: &str,
     search_dirs: &[String],
     loader: &Loader,
+    options: &ConvertOptions,
 ) -> Result<MaterialData, Error> {
     let dirs = search_dirs
         .iter()
@@ -94,11 +101,11 @@ pub fn load_material(
     let translucent = material.translucent();
     let glass = material.surface_prop() == Some("glass");
     let alpha_test = material.alpha_test();
-    let texture = load_texture(base_texture, loader)?;
+    let texture = load_texture(base_texture, loader, options)?;
 
     let bump_map = material.bump_map().and_then(|path| {
         Some(TextureData {
-            image: load_texture(path, loader).ok()?,
+            image: load_texture(path, loader, options).ok()?,
             name: path.into(),
         })
     });
@@ -124,7 +131,11 @@ pub fn load_material(
     })
 }
 
-fn load_texture(name: &str, loader: &Loader) -> Result<DynamicImage, Error> {
+fn load_texture(
+    name: &str,
+    loader: &Loader,
+    options: &ConvertOptions,
+) -> Result<DynamicImage, Error> {
     let path = format!(
         "materials/{}.vtf",
         name.trim_end_matches(".vtf").trim_start_matches('/')
@@ -134,5 +145,13 @@ fn load_texture(name: &str, loader: &Loader) -> Result<DynamicImage, Error> {
         .ok_or(Error::Other(format!("Can't find file {}", path)))?;
     let vtf = VTF::read(&mut raw)?;
     let image = vtf.highres_image.decode(0)?;
-    Ok(image)
+    if options.texture_scale != 1.0 {
+        Ok(image.resize(
+            (image.width() as f32 * options.texture_scale) as u32,
+            (image.height() as f32 * options.texture_scale) as u32,
+            FilterType::CatmullRom,
+        ))
+    } else {
+        Ok(image)
+    }
 }

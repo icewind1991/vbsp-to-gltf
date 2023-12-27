@@ -2181,6 +2181,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8277e703c934b9693d0773d5749faacc6366b3d81d012da556a4cfd4ab87f336"
 dependencies = [
  "libm",
+ "rayon",
 ]
 
 [[package]]
@@ -2610,6 +2611,7 @@ dependencies = [
 name = "vbsp-to-gltf"
 version = "0.1.0"
 dependencies = [
+ "ahash",
  "async-tempfile",
  "axum",
  "bytemuck",
@@ -2622,6 +2624,7 @@ dependencies = [
  "miette",
  "reqwest",
  "serde",
+ "texpresso",
  "tf-asset-loader",
  "thiserror",
  "tokio",

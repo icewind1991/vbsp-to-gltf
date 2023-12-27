@@ -34,9 +34,10 @@ gltf-json = { version = "1.4.0", features = ["KHR_texture_transform"] }
 gltf = "1.4.0"
 cgmath = "0.18.0"
 bytemuck = { version = "1.14.0", features = ["derive"] }
+texpresso = { version = "2.0.1", features = ["rayon"] }
+serde = "1.0.193"
 
 url = { version = "2.5.0", optional = true, features = ["serde"] }
-serde = { version = "1.0.193", optional = true }
 toml = { version = "0.8.8", optional = true }
 axum = { version = "0.7.2", optional = true, features = ["macros"] }
 tokio = { version = "1.35.1", features = ["full"], optional = true }
@@ -44,9 +45,14 @@ reqwest = { version = "0.11.23", optional = true, default-features = false, feat
 async-tempfile = { version = "0.5.0", optional = true }
 tower-http = { version = "0.5.0", optional = true, features = ["cors"] }
 http = { version = "1.0.0", optional = true }
+ahash = { version = "0.8.6", optional = true }
 
 [features]
-server = ["url", "serde", "toml", "axum", "tokio", "reqwest", "async-tempfile", "tower-http", "http"]
+server = ["url", "toml", "axum", "tokio", "reqwest", "async-tempfile", "tower-http", "http", "ahash"]
 
 [profile.dev.package."*"]
 opt-level = 2
+
+[profile.release]
+codegen-units = 1
+lto = true

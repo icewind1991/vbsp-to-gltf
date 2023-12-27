@@ -1,5 +1,6 @@
 use crate::convert::pad_byte_vector;
 use crate::materials::{load_material_fallback, MaterialData, TextureData};
+use crate::ConvertOptions;
 use gltf_json::buffer::View;
 use gltf_json::extensions::texture::{
     TextureTransform, TextureTransformOffset, TextureTransformRotation, TextureTransformScale,
@@ -20,12 +21,13 @@ pub fn push_or_get_material(
     gltf: &mut Root,
     loader: &Loader,
     material: &str,
+    options: &ConvertOptions,
 ) -> Index<Material> {
     let material = material.to_ascii_lowercase();
     match get_material_index(&gltf.materials, &material) {
         Some(index) => index,
         None => {
-            let material = load_material_fallback(&material, &[String::new()], loader);
+            let material = load_material_fallback(&material, &[String::new()], loader, options);
             let index = gltf.materials.len() as u32;
             let material = push_material(buffer, gltf, material);
             gltf.materials.push(material);
