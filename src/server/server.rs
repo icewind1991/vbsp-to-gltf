@@ -44,7 +44,7 @@ fn default_port() -> u16 {
 }
 
 #[derive(Debug, Error)]
-enum ServerError {
+pub enum ServerError {
     #[error(transparent)]
     Convert(#[from] vbsp_to_gltf::Error),
     #[error(transparent)]

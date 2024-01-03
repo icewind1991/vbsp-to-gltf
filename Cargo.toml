@@ -36,6 +36,7 @@ cgmath = "0.18.0"
 bytemuck = { version = "1.14.0", features = ["derive"] }
 texpresso = { version = "2.0.1", features = ["rayon"] }
 serde = "1.0.193"
+ahash = "0.8.6"
 
 url = { version = "2.5.0", optional = true, features = ["serde"] }
 toml = { version = "0.8.8", optional = true }
@@ -45,10 +46,9 @@ reqwest = { version = "0.11.23", optional = true, default-features = false, feat
 async-tempfile = { version = "0.5.0", optional = true }
 tower-http = { version = "0.5.0", optional = true, features = ["cors"] }
 http = { version = "1.0.0", optional = true }
-ahash = { version = "0.8.6", optional = true }
 
 [features]
-server = ["url", "toml", "axum", "tokio", "reqwest", "async-tempfile", "tower-http", "http", "ahash"]
+server = ["url", "toml", "axum", "tokio", "reqwest", "async-tempfile", "tower-http", "http"]
 
 [profile.dev.package."*"]
 opt-level = 2

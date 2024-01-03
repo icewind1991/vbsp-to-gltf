@@ -11,7 +11,7 @@
     cross-naersk.inputs.nixpkgs.follows = "nixpkgs";
     cross-naersk.inputs.naersk.follows = "naersk";
     steam-fetcher = {
-#      url = "github:nix-community/steam-fetcher";
+      #      url = "github:nix-community/steam-fetcher";
       url = "github:icewind1991/steam-fetcher/filelist";
       inputs.nixpkgs.follows = "nixpkgs";
     };
@@ -30,6 +30,7 @@
       overlays = [
         steam-fetcher.overlays.default
         (import rust-overlay)
+        (import ./overlay.nix)
       ];
       pkgs = (import nixpkgs) {
         inherit system overlays;
@@ -99,26 +100,20 @@
             });
           server = naersk'.buildPackage (nearskOpt
             // {
-               pname = "vbsp-server";
-               preConfigure = ''
+              pname = "vbsp-server";
+              preConfigure = ''
                 cargo_build_options="--features server $cargo_build_options"
-               '';
-               GLTFPACK = "${pkgs.meshoptimizer}/bin/gltfpack";
+              '';
+              GLTFPACK = "${pkgs.meshoptimizer}/bin/gltfpack";
             });
-          assets = pkgs.fetchSteam {
-            name = "tf2-vpks";
-            appId = "440";
-            depotId = "441";
-            manifestId = "5382461088476630278"; # 22 December 2023 – 00:13:59 UTC
-            hash = "sha256-p8waSdyFTKSo7CKQAjAGhL4hGiacjU0M59z47VH1NwM=";
-            fileList = ["regex:(tf2|hl2)_(misc|textures)_.*\.vpk"];
-          };
+          assets = pkgs.vbsp-server-assets;
           server-with-assets = server.overrideAttrs (old: {
-            buildInputs = server.buildInputs ++ [ pkgs.makeWrapper ];
+            buildInputs = server.buildInputs ++ [pkgs.makeWrapper];
             postInstall = ''
               wrapProgram "$out/bin/vbsp-server" --set TF_DIR "${assets}"
             '';
           });
+          vbsp-server = pkgs.vbsp-server;
           default = vbsp-to-gltf;
         };
 
@@ -142,5 +137,8 @@
           nativeBuildInputs = [msrvToolchain] ++ tools;
         };
       };
-    });
+    })
+    // {
+      overlays.default = import ./overlay.nix;
+    };
 }
