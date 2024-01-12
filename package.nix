@@ -7,7 +7,7 @@
   src = sourceByRegex ./. ["Cargo.*" "(src|derive|benches|tests|examples.*)(/.*)?"];
 in
   rustPlatform.buildRustPackage rec {
-    name = "vbsp-server";
+    pname = "vbsp-server";
     version = "0.1.0";
 
     inherit src;
