@@ -21,3 +21,7 @@ through [gltfpack](https://github.com/zeux/meshoptimizer) before usage.
 ![screenshot of koth_bagel model](readme/bagel.webp)
 
 `koth_bagel` as viewed with the [PlayCanvas model viewer](https://playcanvas.com/viewer).
+
+## Online converter
+
+An online version of the convert can be found at [gltf.demos.tf](https://gltf.demos.tf/).
