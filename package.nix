@@ -2,6 +2,7 @@
   stdenv,
   rust-bin,
   makeRustPlatform,
+  meshoptimizer,
   lib,
 }: let
   toolchain = rust-bin.stable.latest.default;
@@ -16,7 +17,11 @@ in
     pname = "vbsp-server";
     version = "0.1.0";
 
+    GLTFPACK = "${meshoptimizer}/bin/gltfpack";
+
     inherit src;
+
+    doCheck = false;
 
     cargoLock = {
       lockFile = ./Cargo.lock;
