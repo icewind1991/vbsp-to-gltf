@@ -20,10 +20,10 @@ pub struct ModelVertex {
     uv: [f32; 2],
 }
 
-impl From<&vmdl::vvd::Vertex> for ModelVertex {
-    fn from(vertex: &vmdl::vvd::Vertex) -> Self {
+impl ModelVertex {
+    fn from(vertex: &vmdl::vvd::Vertex, model: &Model) -> Self {
         ModelVertex {
-            position: map_coords(vertex.position),
+            position: map_coords(model.apply_root_transform(vertex.position)),
             uv: vertex.texture_coordinates,
             normal: vertex.normal.into(),
         }
@@ -36,13 +36,13 @@ fn push_vertices(buffer: &mut Vec<u8>, gltf: &mut Root, model: &Model) {
     let vertex_count = model.vertices().len() as u64;
 
     let (min, max) = model.bounding_box();
-    let min = map_coords(min);
-    let max = map_coords(max);
+    let min = map_coords(model.apply_root_transform(min));
+    let max = map_coords(model.apply_root_transform(max));
 
     let vertex_data = model
         .vertices()
         .iter()
-        .map(ModelVertex::from)
+        .map(|vert| ModelVertex::from(vert, model))
         .flat_map(bytemuck::cast::<_, [u8; size_of::<ModelVertex>()]>);
     buffer.extend(vertex_data);
 
@@ -126,16 +126,20 @@ pub fn push_or_get_model(
     model: &str,
     skin: i32,
     options: &ConvertOptions,
-) -> Index<Mesh> {
+) -> Option<Index<Mesh>> {
     let skinned_name = format!("{model}_{skin}");
     match get_mesh_index(&gltf.meshes, &skinned_name) {
-        Some(index) => index,
+        Some(index) => Some(index),
         None => {
             let prop = load_prop(loader, model).expect("failed to load prop");
-            let index = gltf.meshes.len() as u32;
-            let material = push_model(buffer, gltf, loader, &prop, skin, skinned_name, options);
-            gltf.meshes.push(material);
-            Index::new(index)
+            if prop.vertices().is_empty() {
+                None
+            } else {
+                let index = gltf.meshes.len() as u32;
+                let material = push_model(buffer, gltf, loader, &prop, skin, skinned_name, options);
+                gltf.meshes.push(material);
+                Some(Index::new(index))
+            }
         }
     }
 }

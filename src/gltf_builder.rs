@@ -11,8 +11,8 @@ use gltf_json::texture::Info;
 use gltf_json::validation::Checked::Valid;
 use gltf_json::validation::USize64;
 use gltf_json::{Extras, Image, Index, Material, Root, Texture};
-use image::png::PngEncoder;
-use image::{ColorType, DynamicImage, GenericImageView};
+use image::codecs::png::PngEncoder;
+use image::{ColorType, DynamicImage, ImageEncoder};
 use std::f32::consts::PI;
 use tf_asset_loader::Loader;
 
@@ -125,15 +125,17 @@ fn push_texture(buffer: &mut Vec<u8>, gltf: &mut Root, texture: TextureData) -> 
     let buffer_start = buffer.len() as u64;
     let view_start = gltf.buffer_views.len() as u32;
     let image_start = gltf.images.len() as u32;
+    let image_buffer_size =
+        (image.color().bits_per_pixel() / 8) as u32 * image.width() * image.height();
 
     let mut png_buffer = Vec::new();
     let encoder = PngEncoder::new(&mut png_buffer);
     encoder
-        .encode(
-            image.as_bytes(),
+        .write_image(
+            &image.as_bytes()[0..image_buffer_size as usize],
             image.width(),
             image.height(),
-            image.color(),
+            image.color().into(),
         )
         .expect("failed to encode");
 

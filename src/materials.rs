@@ -1,6 +1,6 @@
 use crate::{ConvertOptions, Error};
 use image::imageops::FilterType;
-use image::{DynamicImage, GenericImageView};
+use image::DynamicImage;
 use tf_asset_loader::Loader;
 use tracing::{error, instrument};
 use vmt_parser::material::{Material, WaterMaterial};
@@ -140,10 +140,10 @@ fn load_texture(
         "materials/{}.vtf",
         name.trim_end_matches(".vtf").trim_start_matches('/')
     );
-    let mut raw = loader
+    let raw = loader
         .load(&path)?
         .ok_or(Error::Other(format!("Can't find file {}", path)))?;
-    let vtf = VTF::read(&mut raw)?;
+    let vtf = VTF::read(&raw)?;
     let image = vtf.highres_image.decode(0)?;
     if options.texture_scale != 1.0 {
         Ok(image.resize(

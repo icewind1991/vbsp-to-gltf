@@ -10,7 +10,7 @@ use gltf_json::validation::USize64;
 use gltf_json::{Buffer, Index, Node, Root, Scene};
 use std::borrow::Cow;
 use tf_asset_loader::Loader;
-use vbsp::Bsp;
+use vbsp::{Bsp, Entity};
 
 pub fn export(bsp: Bsp, loader: &Loader, options: ConvertOptions) -> Result<Glb<'static>, Error> {
     let mut buffer = Vec::new();
@@ -22,37 +22,49 @@ pub fn export(bsp: Bsp, loader: &Loader, options: ConvertOptions) -> Result<Glb<
         root.nodes.push(node);
     }
 
-    for prop in bsp.static_props() {
-        let mesh = push_or_get_model(
+    let entity_props =
+        bsp.entities
+            .iter()
+            .flat_map(|ent| ent.parse())
+            .filter_map(|ent| match ent {
+                Entity::PropDynamic(prop) => Some(prop.as_prop_placement()),
+                Entity::PropPhysics(prop) => Some(prop.as_prop_placement()),
+                Entity::PropDynamicOverride(prop) => Some(prop.as_prop_placement()),
+                _ => None,
+            });
+    let static_props = bsp.static_props().map(|prop| prop.as_prop_placement());
+    for prop in static_props.chain(entity_props) {
+        if let Some(mesh) = push_or_get_model(
             &mut buffer,
             &mut root,
             loader,
-            prop.model(),
+            prop.model,
             prop.skin,
             &options,
-        );
-        let rotation = prop.rotation();
+        ) {
+            let rotation = prop.rotation;
 
-        let node = Node {
-            camera: None,
-            children: None,
-            extensions: Default::default(),
-            extras: Default::default(),
-            matrix: None,
-            mesh: Some(mesh),
-            name: Some(prop.model().into()),
-            rotation: Some(UnitQuaternion([
-                rotation.v.x,
-                rotation.v.y,
-                rotation.v.z,
-                rotation.s,
-            ])),
-            scale: None,
-            translation: Some(map_coords(prop.origin)),
-            skin: None,
-            weights: None,
-        };
-        root.nodes.push(node);
+            let node = Node {
+                camera: None,
+                children: None,
+                extensions: Default::default(),
+                extras: Default::default(),
+                matrix: None,
+                mesh: Some(mesh),
+                name: Some(prop.model.into()),
+                rotation: Some(UnitQuaternion([
+                    rotation.v.x,
+                    rotation.v.y,
+                    rotation.v.z,
+                    rotation.s,
+                ])),
+                scale: None,
+                translation: Some(map_coords(prop.origin)),
+                skin: None,
+                weights: None,
+            };
+            root.nodes.push(node);
+        }
     }
 
     let node_indices = 0..root.nodes.len();

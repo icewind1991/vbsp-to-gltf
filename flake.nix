@@ -1,6 +1,6 @@
 {
   inputs = {
-    nixpkgs.url = "nixpkgs/nixos-23.11";
+    nixpkgs.url = "nixpkgs/nixos-24.05";
     utils.url = "github:numtide/flake-utils";
     naersk.url = "github:nix-community/naersk";
     naersk.inputs.nixpkgs.follows = "nixpkgs";
@@ -11,8 +11,7 @@
     cross-naersk.inputs.nixpkgs.follows = "nixpkgs";
     cross-naersk.inputs.naersk.follows = "naersk";
     steam-fetcher = {
-      #      url = "github:nix-community/steam-fetcher";
-      url = "github:icewind1991/steam-fetcher/filelist";
+      url = "github:nix-community/steam-fetcher";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
