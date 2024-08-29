@@ -1,8 +1,14 @@
 {
   stdenv,
-  rustPlatform,
+  rust-bin,
+  makeRustPlatform,
   lib,
 }: let
+  toolchain = rust-bin.stable.latest.default;
+  rustPlatform = makeRustPlatform {
+    rustc = toolchain;
+    cargo = toolchain;
+  };
   inherit (lib.sources) sourceByRegex;
   src = sourceByRegex ./. ["Cargo.*" "(src|derive|benches|tests|examples.*)(/.*)?"];
 in
