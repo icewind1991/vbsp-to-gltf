@@ -2,7 +2,7 @@
 name = "vbsp-to-gltf"
 version = "0.1.0"
 edition = "2021"
-rust-version = "1.70.0"
+rust-version = "1.80.0"
 
 [lib]
 name = "vbsp_to_gltf"
