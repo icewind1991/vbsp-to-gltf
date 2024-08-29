@@ -51,6 +51,15 @@ pub enum ServerError {
     Toml(#[from] toml::de::Error),
     #[error(transparent)]
     Io(#[from] std::io::Error),
+    #[error("IO error {err:#} on {}", path.display())]
+    File { err: std::io::Error, path: PathBuf },
+    #[error("Error {err:#} while packing {} to {} with {}", input.display(), output.display(), binary)]
+    Pack {
+        err: std::io::Error,
+        input: PathBuf,
+        output: PathBuf,
+        binary: String,
+    },
     #[error(transparent)]
     Loader(#[from] LoaderError),
     #[error(transparent)]
@@ -111,7 +120,10 @@ fn setup() -> Result<Config> {
         .init();
 
     let args = Args::parse();
-    let toml = read_to_string(&args.config)?;
+    let toml = read_to_string(&args.config).map_err(|err| ServerError::File {
+        path: args.config.into(),
+        err,
+    })?;
     Ok(from_str(&toml)?)
 }
 
@@ -137,10 +149,8 @@ async fn main() -> Result<()> {
         .with_state(Arc::new(app));
 
     // Run our app with hyper
-    let listener = TcpListener::bind((Ipv4Addr::LOCALHOST, config.port))
-        .await
-        .unwrap();
-    tracing::info!("listening on {}", listener.local_addr()?);
+    let listener = TcpListener::bind((Ipv4Addr::LOCALHOST, config.port)).await?;
+    info!("listening on {}", listener.local_addr()?);
     let serve = async {
         if let Err(e) = axum::serve(listener, app).await {
             eprintln!("{e:#?}");
@@ -170,7 +180,10 @@ impl App {
     fn cached(&self, map: &str, options_key: u64) -> Result<Option<Vec<u8>>> {
         let path = self.cache_path(map, options_key);
         if path.exists() {
-            Ok(Some(read(path)?))
+            Ok(Some(read(&path).map_err(|err| ServerError::File {
+                path: path.clone(),
+                err,
+            })?))
         } else {
             Ok(None)
         }
@@ -178,7 +191,10 @@ impl App {
 
     fn cache(&self, map: &str, data: &[u8], options_key: u64) -> Result<()> {
         let path = self.cache_path(map, options_key);
-        Ok(write(path, data)?)
+        Ok(write(&path, data).map_err(|err| ServerError::File {
+            path: path.clone(),
+            err,
+        })?)
     }
 
     async fn download(&self, map: &str) -> Result<Vec<u8>> {
