@@ -8,3 +8,4 @@ result
 *.glb
 cache
 config.toml
+node_modules
