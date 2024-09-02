@@ -7,7 +7,9 @@ use axum::response::{Html, IntoResponse, Response};
 use axum::routing::get;
 use axum::Router;
 use clap::Parser;
-use http::Method;
+use http::header::{CACHE_CONTROL, CONTENT_TYPE, ETAG};
+use http::{HeaderValue, Method};
+use include_dir::{include_dir, Dir};
 use reqwest::Client;
 use serde::Deserialize;
 use std::fs::{read, read_to_string, write};
@@ -144,6 +146,9 @@ async fn main() -> Result<()> {
 
     let app = Router::new()
         .route("/gltf/:map", get(convert))
+        .route("/view/:map", get(view))
+        .route("/assets/:asset", get(viewer_asset))
+        .route("/transcoders/:asset", get(transcoder_asset))
         .route("/", get(index))
         .layer(cors)
         .with_state(Arc::new(app));
@@ -216,6 +221,87 @@ impl App {
 
 async fn index() -> impl IntoResponse {
     Html(include_str!("./index.html"))
+}
+
+async fn view() -> impl IntoResponse {
+    Html(include_str!("./viewer/dist/index.html"))
+}
+
+static VIEWER_ASSETS: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/src/server/viewer/dist/assets");
+
+pub async fn viewer_asset(asset: Path<String>) -> impl IntoResponse {
+    let path = asset.as_str();
+    match VIEWER_ASSETS.get_file(path) {
+        Some(file) => (
+            [
+                (
+                    CONTENT_TYPE,
+                    HeaderValue::from_str(guess_mime(path)).unwrap(),
+                ),
+                (
+                    ETAG,
+                    HeaderValue::from_static("these_should_be_fully_static"),
+                ),
+                (
+                    CACHE_CONTROL,
+                    HeaderValue::from_static("public, max-age=2592000, immutable"),
+                ),
+            ],
+            file.contents(),
+        )
+            .into_response(),
+        None => StatusCode::NOT_FOUND.into_response(),
+    }
+}
+
+static TRANSCODER_ASSETS: Dir<'_> =
+    include_dir!("$CARGO_MANIFEST_DIR/src/server/viewer/transcoders");
+
+pub async fn transcoder_asset(asset: Path<String>) -> impl IntoResponse {
+    let path = asset.as_str();
+    match TRANSCODER_ASSETS.get_file(path) {
+        Some(file) => (
+            [
+                (
+                    CONTENT_TYPE,
+                    HeaderValue::from_str(guess_mime(path)).unwrap(),
+                ),
+                (
+                    ETAG,
+                    HeaderValue::from_static("these_should_be_fully_static"),
+                ),
+                (
+                    CACHE_CONTROL,
+                    HeaderValue::from_static("public, max-age=2592000, immutable"),
+                ),
+            ],
+            file.contents(),
+        )
+            .into_response(),
+        None => StatusCode::NOT_FOUND.into_response(),
+    }
+}
+
+pub fn guess_mime(path: &str) -> &'static str {
+    if path.ends_with("svg") {
+        "image/svg+xml"
+    } else if path.ends_with("png") {
+        "image/png"
+    } else if path.ends_with("webp") {
+        "image/webp"
+    } else if path.ends_with("css") {
+        "text/css"
+    } else if path.ends_with("wasm") {
+        "application/wasm"
+    } else if path.ends_with("js")
+        || path.ends_with("ts")
+        || path.ends_with("jsx")
+        || path.ends_with("tsx")
+    {
+        "text/javascript"
+    } else {
+        "text/plain"
+    }
 }
 
 async fn convert(

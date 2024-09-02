@@ -9,3 +9,4 @@ result
 cache
 config.toml
 node_modules
+dist

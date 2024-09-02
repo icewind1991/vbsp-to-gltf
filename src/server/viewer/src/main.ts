@@ -1,7 +1,6 @@
 import './style.css'
 import * as THREE from 'three'
 import {PointerLockControls} from 'three/addons/controls/PointerLockControls.js'
-// import {OrbitControls} from 'three/addons/controls/OrbitControls.js'
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js'
 import Stats from 'three/addons/libs/stats.module.js'
 import {KTX2Loader} from 'three/addons/loaders/KTX2Loader.js';
@@ -17,7 +16,7 @@ const renderer = new THREE.WebGLRenderer({antialias: true})
 const loader = new GLTFLoader();
 
 const ktx2Loader = new KTX2Loader();
-ktx2Loader.setTranscoderPath('transcoders/basis/');
+ktx2Loader.setTranscoderPath('/transcoders/');
 ktx2Loader.detectSupport(renderer);
 
 loader.setKTX2Loader(ktx2Loader);
@@ -56,15 +55,23 @@ const dirLight = new THREE.DirectionalLight(0xefefff, 1.5);
 dirLight.position.set(10, 10, 10);
 scene.add(dirLight);
 
+let map;
+
 const urlParams = new URLSearchParams(window.location.search);
-const map = urlParams.get('map');
+if (window.location.pathname.startsWith('/view/')) {
+    map = window.location.pathname.substring('/view/'.length);
+} else {
+    map = urlParams.get('map');
+}
+const textureScale = urlParams.get('texture_scale') || 0.25;
+const textures = urlParams.get('textures') || true;
 console.log(map);
 
-loader.load(`https://gltf.demos.tf/gltf/${map}.glb?texture_scale=0.25`, (gltf) => {
+loader.load(`/gltf/${map}.glb?texture_scale=${textureScale}&textures=${textures}`, (gltf) => {
     document.body.classList.remove('loading');
     gltf.scene.traverse(child => {
-        if (child.material) {
-            child.material.metalness = 0;
+        if ((child as THREE.Mesh).material) {
+            ((child as THREE.Mesh).material as any as THREE.MaterialJSON).metalness = 0;
         }
     });
     scene.add(gltf.scene)
@@ -88,7 +95,7 @@ let movementScale = 250;
 
 const _vector = new THREE.Vector3();
 
-function moveForward(distance) {
+function moveForward(distance: number): void {
     _vector.copy(controls.getDirection(_vector));
 
     camera.position.addScaledVector(_vector, distance);
@@ -124,8 +131,6 @@ function animate() {
     } else {
         movementScale = 250;
     }
-
-    controls.update()
 
     renderer.render(scene, camera)
 
