@@ -65,7 +65,7 @@ pub fn load_material(
     let path = loader
         .find_in_paths(&path, &dirs)
         .ok_or(Error::Other(format!("Can't find file {}", path)))?;
-    let raw = loader.load(&path)?.expect("didn't find foudn path?");
+    let raw = loader.load(&path)?.expect("didn't find found path?");
     let vdf = String::from_utf8(raw)?;
 
     let material = from_str(&vdf).map_err(|e| {

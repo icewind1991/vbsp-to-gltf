@@ -131,7 +131,7 @@ pub fn push_or_get_model(
     match get_mesh_index(&gltf.meshes, &skinned_name) {
         Some(index) => Some(index),
         None => {
-            let prop = load_prop(loader, model).expect("failed to load prop");
+            let prop = load_prop(loader, model).ok()?;
             if prop.vertices().is_empty() {
                 None
             } else {
@@ -242,18 +242,11 @@ pub fn push_primitive(
     gltf.accessors.push(accessor);
 
     let material = if options.textures {
-        let texture = skin
-            .texture_info(mesh.material_index())
-            .expect("mat out of bounds");
-        let texture_path = find_material(&texture.name, &texture.search_paths, loader)
-            .expect("failed to find texture");
-        Some(push_or_get_material(
-            buffer,
-            gltf,
-            loader,
-            &texture_path,
-            options,
-        ))
+        let texture = skin.texture_info(mesh.material_index());
+        let texture_path =
+            texture.and_then(|texture| find_material(&texture.name, &texture.search_paths, loader));
+        texture_path
+            .map(|texture_path| push_or_get_material(buffer, gltf, loader, &texture_path, options))
     } else {
         None
     };

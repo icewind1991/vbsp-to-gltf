@@ -3,6 +3,7 @@ name = "vbsp-to-gltf"
 version = "0.1.0"
 edition = "2021"
 rust-version = "1.80.0"
+default-run = "vbsp-to-gltf"
 
 [lib]
 name = "vbsp_to_gltf"
@@ -27,7 +28,7 @@ tracing-tree = "0.4.0"
 vtf = "0.3.0"
 vmt-parser = "0.2.0"
 image = "0.25.2"
-tf-asset-loader = { version = "0.1.5", features = ["zip"] }
+tf-asset-loader = { version = "0.1.7", features = ["zip"] }
 vmdl = "0.2"
 clap = { version = "4.4.18", features = ["derive"] }
 gltf-json = { version = "1.4.1", features = ["KHR_texture_transform"] }
