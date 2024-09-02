@@ -56,18 +56,20 @@ dirLight.position.set(10, 10, 10);
 scene.add(dirLight);
 
 let map;
+let base_url = "";
 
 const urlParams = new URLSearchParams(window.location.search);
 if (window.location.pathname.startsWith('/view/')) {
     map = window.location.pathname.substring('/view/'.length);
 } else {
     map = urlParams.get('map');
+    base_url = "https://gltf.demos.tf"
 }
 const textureScale = urlParams.get('texture_scale') || 0.25;
 const textures = urlParams.get('textures') || true;
 console.log(map);
 
-loader.load(`/gltf/${map}.glb?texture_scale=${textureScale}&textures=${textures}`, (gltf) => {
+loader.load(`${base_url}/gltf/${map}.glb?texture_scale=${textureScale}&textures=${textures}`, (gltf) => {
     document.body.classList.remove('loading');
     gltf.scene.traverse(child => {
         if ((child as THREE.Mesh).material) {
@@ -75,6 +77,9 @@ loader.load(`/gltf/${map}.glb?texture_scale=${textureScale}&textures=${textures}
         }
     });
     scene.add(gltf.scene)
+}, () => {
+}, (e) => {
+    (document.getElementById('loading') as HTMLElement).textContent = `Failed to load map: ${e}`;
 })
 
 const stats = new Stats()

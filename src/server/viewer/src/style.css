@@ -22,7 +22,7 @@ body.loading #loading {
 #startButton {
     height: 100px;
     width: 350px;
-    margin: -50px -125px;
+    margin: -50px -175px;
     position: absolute;
     top: 50%;
     left: 50%;
@@ -31,10 +31,11 @@ body.loading #loading {
 }
 
 #loading {
+    text-align: center;
     display: none;
     height: 100px;
-    width: 250px;
-    margin: -50px -125px;
+    width: 100vw;
+    margin: -50px -50vw;
     position: absolute;
     top: 50%;
     left: 50%;
