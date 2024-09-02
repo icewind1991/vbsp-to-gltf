@@ -3,6 +3,7 @@
   rust-bin,
   makeRustPlatform,
   meshoptimizer,
+  vbsp-server-viewer,
   lib,
 }: let
   toolchain = rust-bin.stable.latest.default;
@@ -20,6 +21,10 @@ in
     GLTFPACK = "${meshoptimizer}/bin/gltfpack";
 
     inherit src;
+
+    postPatch = ''
+      cp -r ${vbsp-server-viewer} src/server/viewer/dist
+    '';
 
     doCheck = false;
 
