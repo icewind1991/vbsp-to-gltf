@@ -12,7 +12,7 @@
     cargo = toolchain;
   };
   inherit (lib.sources) sourceByRegex;
-  src = sourceByRegex ./. ["Cargo.*" "(src|derive|benches|tests|examples.*)(/.*)?"];
+  src = sourceByRegex ../. ["Cargo.*" "(src|derive|benches|tests|examples.*)(/.*)?"];
 in
   rustPlatform.buildRustPackage rec {
     pname = "vbsp-server";
@@ -29,7 +29,7 @@ in
     doCheck = false;
 
     cargoLock = {
-      lockFile = ./Cargo.lock;
+      lockFile = ../Cargo.lock;
     };
-    buildFeatures = [ "server" ];
+    buildFeatures = ["server"];
   }
