@@ -14,8 +14,6 @@
       url = "github:nix-community/steam-fetcher";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    npmlock2nix.url = "github:nix-community/npmlock2nix";
-    npmlock2nix.flake = false;
   };
 
   outputs = {
@@ -26,16 +24,12 @@
     rust-overlay,
     cross-naersk,
     steam-fetcher,
-    npmlock2nix,
   }:
     utils.lib.eachDefaultSystem (system: let
       overlays = [
         steam-fetcher.overlays.default
         (import rust-overlay)
         (import ./overlay.nix)
-        (final: prev: {
-          npmlock2nix = final.callPackage npmlock2nix {};
-        })
       ];
       pkgs = (import nixpkgs) {
         inherit system overlays;
