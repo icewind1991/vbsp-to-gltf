@@ -1,3 +1,5 @@
+# Moved to https://codeberg.org/icewind/vbsp-to-gltf
+
 # vbsp-to-gtlf
 
 Convert Valve BSP files to GLTF files
